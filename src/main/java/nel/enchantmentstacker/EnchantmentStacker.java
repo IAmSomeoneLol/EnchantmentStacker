@@ -10,7 +10,7 @@ import net.minecraft.world.item.enchantment.Enchantable;
 
 public class EnchantmentStacker implements ModInitializer {
 
-	// This acts as short-term memory so our global enchantment checks know what item is being worked on!
+	// global encht toggle
 	public static final ThreadLocal<ItemStack> CURRENT_ITEM = ThreadLocal.withInitial(() -> null);
 
 	@Override

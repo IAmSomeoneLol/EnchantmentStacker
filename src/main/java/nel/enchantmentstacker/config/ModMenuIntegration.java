@@ -21,7 +21,7 @@ public class ModMenuIntegration implements ModMenuApi {
 
             ConfigEntryBuilder entryBuilder = builder.entryBuilder();
 
-            // Anvil Settings Category
+            // Anvil settings Category
             ConfigCategory anvilCat = builder.getOrCreateCategory(Component.literal("Anvil Settings"));
 
             anvilCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Enable Fixed Anvil Cost"), config.enableFixedAnvilCost)
@@ -44,7 +44,7 @@ public class ModMenuIntegration implements ModMenuApi {
                     .setSaveConsumer(newValue -> config.percentRepairedPerAction = newValue)
                     .build());
 
-            // Stacker Settings Category
+            // Stck Settings Category
             ConfigCategory stackerCat = builder.getOrCreateCategory(Component.literal("Enchantment Stackers"));
 
             stackerCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Allow Sword Stacker"), config.allowSwordStacker)

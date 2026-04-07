@@ -33,7 +33,7 @@ public class EnchantmentMenuMixin {
         }
     }
 
-    // CLEAR THE TRACKER
+    // TRACKER
     @Inject(method = "slotsChanged", at = @At("RETURN"))
     private void clearContext(Container container, CallbackInfo ci) {
         EnchantmentStacker.CURRENT_ITEM.remove();
