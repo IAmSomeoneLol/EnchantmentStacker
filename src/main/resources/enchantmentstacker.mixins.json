@@ -1,0 +1,16 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "nel.enchantmentstacker.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"AnvilRepairMixin",
+		"EnchantmentCompatMixin",
+		"ItemCombinerMenuAccessor",
+		"EnchantmentMaxLevelMixin",
+		"EnchantmentMenuMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

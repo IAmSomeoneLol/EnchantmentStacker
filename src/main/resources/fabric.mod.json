@@ -1,0 +1,30 @@
+{
+	"schemaVersion": 1,
+	"id": "enchantmentstacker",
+	"version": "1.0.0",
+	"name": "Enchantment Stacker",
+	"description": "Allows tweaking enchantments and fixes anvil repair costs.",
+	"authors": [
+		"nel"
+	],
+	"contact": {},
+	"license": "MIT",
+	"icon": "assets/enchantmentstacker/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"nel.enchantmentstacker.EnchantmentStacker"
+		],
+		"modmenu": [
+			"nel.enchantmentstacker.config.ModMenuIntegration"
+		]
+	},
+	"mixins": [
+		"enchantmentstacker.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.0",
+		"minecraft": "~1.21.11",
+		"java": ">=21"
+	}
+}
