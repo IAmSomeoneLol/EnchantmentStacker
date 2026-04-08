@@ -8,7 +8,10 @@
 		"EnchantmentCompatMixin",
 		"ItemCombinerMenuAccessor",
 		"EnchantmentMaxLevelMixin",
-		"EnchantmentMenuMixin"
+		"EnchantmentMenuMixin",
+		"EnchantCommandMixin",
+		"GrindstoneMenuMixin",
+		"AbstractContainerMenuMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

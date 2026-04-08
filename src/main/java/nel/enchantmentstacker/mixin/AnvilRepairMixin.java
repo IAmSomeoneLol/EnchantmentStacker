@@ -15,14 +15,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(AnvilMenu.class)
 public abstract class AnvilRepairMixin {
 
-    // ITEM CAPTURE
+    // ITEM CAPTURE (Fixes the Sword Stacking Bug with bugrock geyser)
     @Inject(method = "createResult", at = @At("HEAD"))
     private void captureContext(CallbackInfo ci) {
         AnvilMenu menu = (AnvilMenu) (Object) this;
         EnchantmentStacker.CURRENT_ITEM.set(menu.getSlot(0).getItem());
     }
 
-    // CLEAR THE TRACKER SO IT DOESN'T LEAK LOL
+    // -- CLEAR THE TRACKER ---
     @Inject(method = "createResult", at = @At("RETURN"))
     private void clearContext(CallbackInfo ci) {
         EnchantmentStacker.CURRENT_ITEM.remove();

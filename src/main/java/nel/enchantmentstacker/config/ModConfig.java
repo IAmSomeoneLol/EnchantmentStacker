@@ -6,7 +6,6 @@ import com.google.gson.GsonBuilder;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,18 +13,23 @@ public class ModConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final File CONFIG_FILE = new File("config/enchantmentstacker.json");
 
+    // Anvil & Grindstone Settings
     public boolean enableFixedAnvilCost = true;
     public int repairCostLevelAmount = 3;
     public int repairCostMaterialAmount = 1;
     public double percentRepairedPerAction = 0.3333;
+    public boolean enableGrindstoneExtraction = true;
 
-    public boolean allowArmorStacker = true;
+    // Stacker Settings
     public boolean allowSwordStacker = true;
     public boolean allowAxeStacker = true;
-    public boolean allowHoeExpanded = true;
+    public boolean allowMaceStacker = true;
     public boolean allowBowStacker = true;
     public boolean allowCrossbowStacker = true;
-    public boolean allowMaceStacker = true;
+
+    // Armor & Tool Tweaks
+    public boolean allowArmorStacker = true;
+    public boolean allowHoeExpanded = true;
     public boolean allowTheUnEnchantable = true;
 
     // Map to hold all Vanilla Enchantment Max Levels
@@ -44,11 +48,22 @@ public class ModConfig {
         if (CONFIG_FILE.exists()) {
             try (FileReader reader = new FileReader(CONFIG_FILE)) {
                 instance = GSON.fromJson(reader, ModConfig.class);
-            } catch (IOException e) {
+
+                // If the file was completely empty, GSON returns null.
+                if (instance == null) {
+                    instance = new ModConfig();
+                }
+            } catch (Exception e) {
+                // Catch exceptions (corrupted JSON formatting)
                 instance = new ModConfig();
             }
         } else {
             instance = new ModConfig();
+        }
+
+        // check in case GSON missed the map during an update
+        if (instance.vanillaEnchantmentMaxLevels == null) {
+            instance.vanillaEnchantmentMaxLevels = new HashMap<>();
         }
 
         if (instance.vanillaEnchantmentMaxLevels.isEmpty()) {
@@ -61,7 +76,7 @@ public class ModConfig {
         CONFIG_FILE.getParentFile().mkdirs();
         try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
             GSON.toJson(instance, writer);
-        } catch (IOException ignored) {}
+        } catch (Exception ignored) {}
     }
 
     public int getCustomMaxLevel(String translationKey) {

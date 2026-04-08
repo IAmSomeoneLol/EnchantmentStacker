@@ -17,15 +17,6 @@ public abstract class EnchantmentMaxLevelMixin {
 
     @Inject(method = "getMaxLevel", at = @At("HEAD"), cancellable = true)
     private void applyCustomMaxLevel(CallbackInfoReturnable<Integer> cir) {
-
-        // Unchains the /enchant command limit by reading the server's live stack trace
-        for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
-            if (element.getClassName().contains("EnchantCommand")) {
-                cir.setReturnValue(255);
-                return;
-            }
-        }
-
         if (this.description().getContents() instanceof TranslatableContents translatable) {
             String key = translatable.getKey();
             int customMax = ModConfig.get().getCustomMaxLevel(key);

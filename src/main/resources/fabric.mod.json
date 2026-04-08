@@ -3,12 +3,12 @@
 	"id": "enchantmentstacker",
 	"version": "1.0.0",
 	"name": "Enchantment Stacker",
-	"description": "Allows tweaking enchantments and fixes anvil repair costs.",
+	"description": "Allows tweaking enchantments and fixes anvil repair costs & Grindstone enchantment transfer.",
 	"authors": [
-		"nel"
+		"nela1."
 	],
 	"contact": {},
-	"license": "MIT",
+	"license": "CC-BY-NC-ND-4.0",
 	"icon": "assets/enchantmentstacker/icon.png",
 	"environment": "*",
 	"entrypoints": {

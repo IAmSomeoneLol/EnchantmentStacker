@@ -23,6 +23,17 @@ public class EnchantmentCompatMixin {
         return "";
     }
 
+    // CAPTURE THE ITEM PRECISELY WHEN THE GAME EVALUATES IT
+    @Inject(method = "isSupportedItem", at = @At("HEAD"))
+    private void captureContextFromSupported(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+        EnchantmentStacker.CURRENT_ITEM.set(stack);
+    }
+
+    @Inject(method = "isPrimaryItem", at = @At("HEAD"))
+    private void captureContextFromPrimary(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+        EnchantmentStacker.CURRENT_ITEM.set(stack);
+    }
+
     @Inject(method = "areCompatible", at = @At("HEAD"), cancellable = true)
     private static void forceCompatibility(Holder<Enchantment> a, Holder<Enchantment> b, CallbackInfoReturnable<Boolean> cir) {
         ModConfig config = ModConfig.get();
@@ -37,7 +48,6 @@ public class EnchantmentCompatMixin {
         // GRAB THE ITEM FROM MEMORY
         ItemStack current = EnchantmentStacker.CURRENT_ITEM.get();
 
-        // IDENTIFY USING TAGS AND REGISTRY INSTEAD OF CLASSES/COMPONENTS
         boolean isSword = current != null && current.is(ItemTags.SWORDS);
         boolean isAxe = current != null && current.is(ItemTags.AXES);
         boolean isHoe = current != null && current.is(ItemTags.HOES);
@@ -101,7 +111,15 @@ public class EnchantmentCompatMixin {
         if ((config.allowAxeStacker && stack.is(ItemTags.AXES)) ||
                 (config.allowHoeExpanded && stack.is(ItemTags.HOES)) ||
                 (config.allowMaceStacker && stack.is(Items.MACE))) {
-            if (enchantment.isSupportedItem(new ItemStack(Items.DIAMOND_SWORD))) cir.setReturnValue(true);
+
+            if (enchantment.isSupportedItem(new ItemStack(Items.DIAMOND_SWORD))) {
+                // BLACKLIST SWEEPING EDGE FOR AXES
+                if (stack.is(ItemTags.AXES) && key.equals("enchantment.minecraft.sweeping_edge")) {
+                    // Let it fall through to vanilla logic (which naturally rejects it)
+                } else {
+                    cir.setReturnValue(true);
+                }
+            }
         }
 
         // Crossbow borrows Bow enchants
@@ -127,7 +145,15 @@ public class EnchantmentCompatMixin {
         if ((config.allowAxeStacker && stack.is(ItemTags.AXES)) ||
                 (config.allowHoeExpanded && stack.is(ItemTags.HOES)) ||
                 (config.allowMaceStacker && stack.is(Items.MACE))) {
-            if (enchantment.isPrimaryItem(new ItemStack(Items.DIAMOND_SWORD))) cir.setReturnValue(true);
+
+            if (enchantment.isPrimaryItem(new ItemStack(Items.DIAMOND_SWORD))) {
+                // BLACKLIST SWEEPING EDGE FOR AXES
+                if (stack.is(ItemTags.AXES) && key.equals("enchantment.minecraft.sweeping_edge")) {
+                    // Let it fall through to vanilla logic
+                } else {
+                    cir.setReturnValue(true);
+                }
+            }
         }
 
         if (config.allowCrossbowStacker && stack.is(Items.CROSSBOW)) {
