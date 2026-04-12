@@ -3,7 +3,6 @@ package nel.enchantmentstacker.mixin;
 import nel.enchantmentstacker.EnchantmentStacker;
 import nel.enchantmentstacker.config.ModConfig;
 import net.minecraft.core.Holder;
-import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -16,75 +15,109 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Enchantment.class)
 public class EnchantmentCompatMixin {
 
-    // Safely reads the translation string for instance methods
-    private static String getEnchKey(Enchantment enchantment) {
-        if (enchantment.description().getContents() instanceof TranslatableContents translatable) {
-            String key = translatable.getKey();
-            if (key.startsWith("enchantment.")) {
-                String trimmed = key.substring(12);
-                int dotIndex = trimmed.indexOf('.');
-                if (dotIndex != -1) {
-                    return trimmed.substring(0, dotIndex) + ":" + trimmed.substring(dotIndex + 1);
-                }
+    private static String getEnchKeyFromInstance(Enchantment enchantment) {
+        String str = enchantment.description().toString();
+        int start = str.indexOf("enchantment.");
+        if (start != -1) {
+            int end = start;
+            while (end < str.length() && (Character.isLetterOrDigit(str.charAt(end)) || str.charAt(end) == '.' || str.charAt(end) == '_' || str.charAt(end) == '-')) {
+                end++;
+            }
+            String fullKey = str.substring(start, end);
+            String trimmed = fullKey.substring(12);
+            int dotIndex = trimmed.indexOf('.');
+            if (dotIndex != -1) {
+                return trimmed.substring(0, dotIndex) + ":" + trimmed.substring(dotIndex + 1);
+            } else {
+                return "minecraft:" + trimmed;
             }
         }
         return "";
     }
 
+    private static String getEnchKey(Holder<Enchantment> holder) {
+        if (holder.unwrapKey().isPresent()) {
+            String str = holder.unwrapKey().get().toString();
+            int start = str.indexOf(" / ");
+            if (start != -1) {
+                int end = str.indexOf("]", start);
+                if (end != -1) {
+                    return str.substring(start + 3, end);
+                }
+            }
+        }
+        return getEnchKeyFromInstance(holder.value());
+    }
+
     @Inject(method = "areCompatible", at = @At("HEAD"), cancellable = true)
     private static void forceCompatibility(Holder<Enchantment> a, Holder<Enchantment> b, CallbackInfoReturnable<Boolean> cir) {
         ModConfig config = ModConfig.get();
-
-        // In 1.21+, Holders know their exact registry ID! This natively fetches "minecraft:sharpness"
-        String keyA = a.unwrapKey().map(k -> k.location().toString()).orElse("");
-        String keyB = b.unwrapKey().map(k -> k.location().toString()).orElse("");
+        String keyA = getEnchKey(a);
+        String keyB = getEnchKey(b);
 
         if (keyA.isEmpty() || keyB.isEmpty()) return;
 
-        // Preserve Silk Touch and Fortune incompatibility permanently
-        if ((keyA.equals("minecraft:silk_touch") && keyB.equals("minecraft:fortune")) ||
-                (keyA.equals("minecraft:fortune") && keyB.equals("minecraft:silk_touch"))) return;
-
-        // Pull the CURRENT_ITEM safely from the Anvil/Command tracker
         ItemStack current = EnchantmentStacker.CURRENT_ITEM.get();
         if (current == null || current.isEmpty()) return;
 
         boolean isSword = current.is(ItemTags.SWORDS);
         boolean isAxe = current.is(ItemTags.AXES);
-        boolean isHoe = current.is(ItemTags.HOES);
         boolean isMace = current.is(Items.MACE);
         boolean isTrident = current.is(Items.TRIDENT);
-        boolean isArmor = current.is(ItemTags.TRIMMABLE_ARMOR);
         boolean isBow = current.is(Items.BOW);
         boolean isCrossbow = current.is(Items.CROSSBOW);
+        boolean isArmor = current.is(ItemTags.TRIMMABLE_ARMOR);
+        boolean isPickaxe = current.is(ItemTags.PICKAXES);
+        boolean isShovel = current.is(ItemTags.SHOVELS);
+        boolean isHoe = current.is(ItemTags.HOES);
         boolean isBook = current.is(Items.BOOK) || current.is(Items.ENCHANTED_BOOK);
 
-        // Check if the current tool is unlocked AND if BOTH enchantments are in its custom list
-        if ((isSword || isBook) && config.unlockedSword && config.swordEnchantments.contains(keyA) && config.swordEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
-        if ((isAxe || isBook) && config.unlockedAxe && config.axeEnchantments.contains(keyA) && config.axeEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
-        if ((isMace || isBook) && config.unlockedMace && config.maceEnchantments.contains(keyA) && config.maceEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
-        if ((isTrident || isBook) && config.unlockedTrident && config.tridentEnchantments.contains(keyA) && config.tridentEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
-        if ((isBow || isBook) && config.unlockedBow && config.bowEnchantments.contains(keyA) && config.bowEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
-        if ((isCrossbow || isBook) && config.unlockedCrossbow && config.crossbowEnchantments.contains(keyA) && config.crossbowEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
-        if ((isArmor || isBook) && config.unlockedArmor && config.armorEnchantments.contains(keyA) && config.armorEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
-        if ((isHoe || isBook) && config.unlockedHoe && config.hoeEnchantments.contains(keyA) && config.hoeEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+        // STRICT WHITELIST CHECK
+        if (isBook) {
+            if (config.unlockedSword && config.swordEnchantments.contains(keyA) && config.swordEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+            if (config.unlockedAxe && config.axeEnchantments.contains(keyA) && config.axeEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+            if (config.unlockedMace && config.maceEnchantments.contains(keyA) && config.maceEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+            if (config.unlockedTrident && config.tridentEnchantments.contains(keyA) && config.tridentEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+            if (config.unlockedBow && config.bowEnchantments.contains(keyA) && config.bowEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+            if (config.unlockedCrossbow && config.crossbowEnchantments.contains(keyA) && config.crossbowEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+            if (config.unlockedArmor && config.armorEnchantments.contains(keyA) && config.armorEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+            if (config.unlockedPickaxe && config.pickaxeEnchantments.contains(keyA) && config.pickaxeEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+            if (config.unlockedShovel && config.shovelEnchantments.contains(keyA) && config.shovelEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+            if (config.unlockedHoe && config.hoeEnchantments.contains(keyA) && config.hoeEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+        } else {
+            if (isSword && config.unlockedSword) { cir.setReturnValue(config.swordEnchantments.contains(keyA) && config.swordEnchantments.contains(keyB)); return; }
+            if (isAxe && config.unlockedAxe) { cir.setReturnValue(config.axeEnchantments.contains(keyA) && config.axeEnchantments.contains(keyB)); return; }
+            if (isMace && config.unlockedMace) { cir.setReturnValue(config.maceEnchantments.contains(keyA) && config.maceEnchantments.contains(keyB)); return; }
+            if (isTrident && config.unlockedTrident) { cir.setReturnValue(config.tridentEnchantments.contains(keyA) && config.tridentEnchantments.contains(keyB)); return; }
+            if (isBow && config.unlockedBow) { cir.setReturnValue(config.bowEnchantments.contains(keyA) && config.bowEnchantments.contains(keyB)); return; }
+            if (isCrossbow && config.unlockedCrossbow) { cir.setReturnValue(config.crossbowEnchantments.contains(keyA) && config.crossbowEnchantments.contains(keyB)); return; }
+            if (isArmor && config.unlockedArmor) { cir.setReturnValue(config.armorEnchantments.contains(keyA) && config.armorEnchantments.contains(keyB)); return; }
+            if (isPickaxe && config.unlockedPickaxe) { cir.setReturnValue(config.pickaxeEnchantments.contains(keyA) && config.pickaxeEnchantments.contains(keyB)); return; }
+            if (isShovel && config.unlockedShovel) { cir.setReturnValue(config.shovelEnchantments.contains(keyA) && config.shovelEnchantments.contains(keyB)); return; }
+            if (isHoe && config.unlockedHoe) { cir.setReturnValue(config.hoeEnchantments.contains(keyA) && config.hoeEnchantments.contains(keyB)); return; }
+        }
     }
 
     @Inject(method = "isSupportedItem", at = @At("HEAD"), cancellable = true)
     private void expandSupportedItems(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         ModConfig config = ModConfig.get();
         Enchantment enchantment = (Enchantment) (Object) this;
-        String key = getEnchKey(enchantment);
+        String key = getEnchKeyFromInstance(enchantment);
 
-        // Checks whitelist dynamically based on the target item
-        if (config.unlockedSword && stack.is(ItemTags.SWORDS) && config.swordEnchantments.contains(key)) { cir.setReturnValue(true); return; }
-        if (config.unlockedAxe && stack.is(ItemTags.AXES) && config.axeEnchantments.contains(key)) { cir.setReturnValue(true); return; }
-        if (config.unlockedMace && stack.is(Items.MACE) && config.maceEnchantments.contains(key)) { cir.setReturnValue(true); return; }
-        if (config.unlockedTrident && stack.is(Items.TRIDENT) && config.tridentEnchantments.contains(key)) { cir.setReturnValue(true); return; }
-        if (config.unlockedBow && stack.is(Items.BOW) && config.bowEnchantments.contains(key)) { cir.setReturnValue(true); return; }
-        if (config.unlockedCrossbow && stack.is(Items.CROSSBOW) && config.crossbowEnchantments.contains(key)) { cir.setReturnValue(true); return; }
-        if (config.unlockedArmor && stack.is(ItemTags.TRIMMABLE_ARMOR) && config.armorEnchantments.contains(key)) { cir.setReturnValue(true); return; }
-        if (config.unlockedHoe && stack.is(ItemTags.HOES) && config.hoeEnchantments.contains(key)) { cir.setReturnValue(true); return; }
+        if (key.isEmpty()) return;
+        if (stack.is(Items.BOOK) || stack.is(Items.ENCHANTED_BOOK)) return;
+
+        // STRICT WHITELIST CHECK
+        if (config.unlockedSword && stack.is(ItemTags.SWORDS)) { cir.setReturnValue(config.swordEnchantments.contains(key)); return; }
+        if (config.unlockedAxe && stack.is(ItemTags.AXES)) { cir.setReturnValue(config.axeEnchantments.contains(key)); return; }
+        if (config.unlockedMace && stack.is(Items.MACE)) { cir.setReturnValue(config.maceEnchantments.contains(key)); return; }
+        if (config.unlockedTrident && stack.is(Items.TRIDENT)) { cir.setReturnValue(config.tridentEnchantments.contains(key)); return; }
+        if (config.unlockedBow && stack.is(Items.BOW)) { cir.setReturnValue(config.bowEnchantments.contains(key)); return; }
+        if (config.unlockedCrossbow && stack.is(Items.CROSSBOW)) { cir.setReturnValue(config.crossbowEnchantments.contains(key)); return; }
+        if (config.unlockedArmor && stack.is(ItemTags.TRIMMABLE_ARMOR)) { cir.setReturnValue(config.armorEnchantments.contains(key)); return; }
+        if (config.unlockedPickaxe && stack.is(ItemTags.PICKAXES)) { cir.setReturnValue(config.pickaxeEnchantments.contains(key)); return; }
+        if (config.unlockedShovel && stack.is(ItemTags.SHOVELS)) { cir.setReturnValue(config.shovelEnchantments.contains(key)); return; }
+        if (config.unlockedHoe && stack.is(ItemTags.HOES)) { cir.setReturnValue(config.hoeEnchantments.contains(key)); return; }
 
         if (config.allowTheUnEnchantable) {
             if (stack.is(Items.SHIELD) || stack.is(Items.ELYTRA) || stack.is(Items.SHEARS) || stack.is(Items.FLINT_AND_STEEL) || stack.is(Items.BRUSH)) {
@@ -98,17 +131,22 @@ public class EnchantmentCompatMixin {
     private void expandPrimaryItems(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         ModConfig config = ModConfig.get();
         Enchantment enchantment = (Enchantment) (Object) this;
-        String key = getEnchKey(enchantment);
+        String key = getEnchKeyFromInstance(enchantment);
 
-        // Checks whitelist dynamically based on the target item
-        if (config.unlockedSword && stack.is(ItemTags.SWORDS) && config.swordEnchantments.contains(key)) { cir.setReturnValue(true); return; }
-        if (config.unlockedAxe && stack.is(ItemTags.AXES) && config.axeEnchantments.contains(key)) { cir.setReturnValue(true); return; }
-        if (config.unlockedMace && stack.is(Items.MACE) && config.maceEnchantments.contains(key)) { cir.setReturnValue(true); return; }
-        if (config.unlockedTrident && stack.is(Items.TRIDENT) && config.tridentEnchantments.contains(key)) { cir.setReturnValue(true); return; }
-        if (config.unlockedBow && stack.is(Items.BOW) && config.bowEnchantments.contains(key)) { cir.setReturnValue(true); return; }
-        if (config.unlockedCrossbow && stack.is(Items.CROSSBOW) && config.crossbowEnchantments.contains(key)) { cir.setReturnValue(true); return; }
-        if (config.unlockedArmor && stack.is(ItemTags.TRIMMABLE_ARMOR) && config.armorEnchantments.contains(key)) { cir.setReturnValue(true); return; }
-        if (config.unlockedHoe && stack.is(ItemTags.HOES) && config.hoeEnchantments.contains(key)) { cir.setReturnValue(true); return; }
+        if (key.isEmpty()) return;
+        if (stack.is(Items.BOOK) || stack.is(Items.ENCHANTED_BOOK)) return;
+
+        // STRICT WHITELIST CHECK
+        if (config.unlockedSword && stack.is(ItemTags.SWORDS)) { cir.setReturnValue(config.swordEnchantments.contains(key)); return; }
+        if (config.unlockedAxe && stack.is(ItemTags.AXES)) { cir.setReturnValue(config.axeEnchantments.contains(key)); return; }
+        if (config.unlockedMace && stack.is(Items.MACE)) { cir.setReturnValue(config.maceEnchantments.contains(key)); return; }
+        if (config.unlockedTrident && stack.is(Items.TRIDENT)) { cir.setReturnValue(config.tridentEnchantments.contains(key)); return; }
+        if (config.unlockedBow && stack.is(Items.BOW)) { cir.setReturnValue(config.bowEnchantments.contains(key)); return; }
+        if (config.unlockedCrossbow && stack.is(Items.CROSSBOW)) { cir.setReturnValue(config.crossbowEnchantments.contains(key)); return; }
+        if (config.unlockedArmor && stack.is(ItemTags.TRIMMABLE_ARMOR)) { cir.setReturnValue(config.armorEnchantments.contains(key)); return; }
+        if (config.unlockedPickaxe && stack.is(ItemTags.PICKAXES)) { cir.setReturnValue(config.pickaxeEnchantments.contains(key)); return; }
+        if (config.unlockedShovel && stack.is(ItemTags.SHOVELS)) { cir.setReturnValue(config.shovelEnchantments.contains(key)); return; }
+        if (config.unlockedHoe && stack.is(ItemTags.HOES)) { cir.setReturnValue(config.hoeEnchantments.contains(key)); return; }
 
         if (config.allowTheUnEnchantable) {
             if (stack.is(Items.SHIELD) || stack.is(Items.ELYTRA) || stack.is(Items.SHEARS) || stack.is(Items.FLINT_AND_STEEL) || stack.is(Items.BRUSH)) {

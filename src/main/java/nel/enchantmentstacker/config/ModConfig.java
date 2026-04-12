@@ -26,51 +26,77 @@ public class ModConfig {
     // Unlocked - Weapons
     public boolean unlockedSword = true;
     public List<String> swordEnchantments = new ArrayList<>(Arrays.asList(
-            "minecraft:sharpness", "minecraft:smite", "minecraft:bane_of_arthropods"
+            "minecraft:sharpness", "minecraft:smite", "minecraft:bane_of_arthropods",
+            "minecraft:knockback", "minecraft:fire_aspect", "minecraft:looting",
+            "minecraft:sweeping_edge", "minecraft:unbreaking", "minecraft:mending"
     ));
 
     public boolean unlockedAxe = true;
     public List<String> axeEnchantments = new ArrayList<>(Arrays.asList(
             "minecraft:sharpness", "minecraft:smite", "minecraft:bane_of_arthropods",
-            "minecraft:fire_aspect", "minecraft:looting", "minecraft:knockback"
+            "minecraft:knockback", "minecraft:fire_aspect", "minecraft:looting",
+            "minecraft:efficiency", "minecraft:silk_touch", "minecraft:fortune",
+            "minecraft:unbreaking", "minecraft:mending", "minecraft:cleaving"
     ));
 
     public boolean unlockedMace = true;
     public List<String> maceEnchantments = new ArrayList<>(Arrays.asList(
-            "minecraft:breach", "minecraft:density", "minecraft:sharpness",
-            "minecraft:smite", "minecraft:bane_of_arthropods", "minecraft:fire_aspect", "minecraft:looting"
+            "minecraft:breach", "minecraft:density", "minecraft:wind_burst",
+            "minecraft:sharpness", "minecraft:smite", "minecraft:bane_of_arthropods",
+            "minecraft:knockback", "minecraft:fire_aspect", "minecraft:looting",
+            "minecraft:unbreaking", "minecraft:mending"
     ));
 
     // Unlocked - Ranged & Trident
     public boolean unlockedTrident = true;
     public List<String> tridentEnchantments = new ArrayList<>(Arrays.asList(
-            "minecraft:riptide", "minecraft:loyalty", "minecraft:channeling",
+            "minecraft:riptide", "minecraft:loyalty", "minecraft:channeling", "minecraft:impaling",
             "minecraft:sharpness", "minecraft:smite", "minecraft:bane_of_arthropods",
-            "minecraft:looting", "minecraft:fire_aspect"
+            "minecraft:looting", "minecraft:fire_aspect", "minecraft:unbreaking", "minecraft:mending"
     ));
 
     public boolean unlockedBow = true;
     public List<String> bowEnchantments = new ArrayList<>(Arrays.asList(
-            "minecraft:infinity", "minecraft:mending"
+            "minecraft:power", "minecraft:punch", "minecraft:flame",
+            "minecraft:infinity", "minecraft:mending", "minecraft:unbreaking"
     ));
 
     public boolean unlockedCrossbow = true;
     public List<String> crossbowEnchantments = new ArrayList<>(Arrays.asList(
-            "minecraft:multishot", "minecraft:piercing", "minecraft:power",
-            "minecraft:punch", "minecraft:flame", "minecraft:infinity", "minecraft:mending"
+            "minecraft:multishot", "minecraft:piercing", "minecraft:quick_charge",
+            "minecraft:power", "minecraft:punch", "minecraft:flame",
+            "minecraft:infinity", "minecraft:mending", "minecraft:unbreaking"
     ));
 
     // Unlocked - Armor & Tools
     public boolean unlockedArmor = true;
     public List<String> armorEnchantments = new ArrayList<>(Arrays.asList(
             "minecraft:protection", "minecraft:fire_protection",
-            "minecraft:blast_protection", "minecraft:projectile_protection"
+            "minecraft:blast_protection", "minecraft:projectile_protection",
+            "minecraft:thorns", "minecraft:respiration", "minecraft:aqua_affinity",
+            "minecraft:depth_strider", "minecraft:frost_walker", "minecraft:soul_speed",
+            "minecraft:swift_sneak", "minecraft:unbreaking", "minecraft:mending"
+    ));
+
+    public boolean unlockedPickaxe = false;
+    public List<String> pickaxeEnchantments = new ArrayList<>(Arrays.asList(
+            "minecraft:efficiency", "minecraft:silk_touch", "minecraft:fortune",
+            "minecraft:unbreaking", "minecraft:mending"
+    ));
+
+    public boolean unlockedShovel = false;
+    public List<String> shovelEnchantments = new ArrayList<>(Arrays.asList(
+            "minecraft:efficiency", "minecraft:silk_touch", "minecraft:fortune",
+            "minecraft:sharpness", "minecraft:smite", "minecraft:bane_of_arthropods",
+            "minecraft:knockback", "minecraft:fire_aspect", "minecraft:looting",
+            "minecraft:unbreaking", "minecraft:mending"
     ));
 
     public boolean unlockedHoe = true;
     public List<String> hoeEnchantments = new ArrayList<>(Arrays.asList(
+            "minecraft:efficiency", "minecraft:silk_touch", "minecraft:fortune",
             "minecraft:sharpness", "minecraft:smite", "minecraft:bane_of_arthropods",
-            "minecraft:fire_aspect", "minecraft:looting"
+            "minecraft:fire_aspect", "minecraft:looting", "minecraft:unbreaking", "minecraft:mending"
     ));
 
     // Un-Enchantables

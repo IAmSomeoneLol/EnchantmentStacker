@@ -39,11 +39,12 @@ public class ModMenuIntegration implements ModMenuApi {
 
             anvilCat.addEntry(entryBuilder.startDoubleField(Component.literal("Percent Repaired Per Action"), config.percentRepairedPerAction)
                     .setDefaultValue(0.3333)
+                    .setTooltip(Component.literal("How much durability is restored per material. 0.3333 means 3 materials fully repair the item."))
                     .setSaveConsumer(newValue -> config.percentRepairedPerAction = newValue).build());
 
             anvilCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Enable Grindstone Extraction"), config.enableGrindstoneExtraction)
                     .setDefaultValue(true)
-                    .setTooltip(Component.literal("Place an Enchanted Item and a Book in the Grindstone to extract enchants."))
+                    .setTooltip(Component.literal("Place an Enchanted Item and a Book in the Grindstone to safely extract enchants."))
                     .setSaveConsumer(newValue -> config.enableGrindstoneExtraction = newValue).build());
 
 
@@ -51,19 +52,27 @@ public class ModMenuIntegration implements ModMenuApi {
             ConfigCategory weaponCat = builder.getOrCreateCategory(Component.literal("Unlocked: Weapons"));
 
             weaponCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Sword"), config.unlockedSword)
-                    .setDefaultValue(true).setSaveConsumer(newValue -> config.unlockedSword = newValue).build());
+                    .setDefaultValue(true)
+                    .setTooltip(Component.literal("When TRUE, strictly enforces the whitelist below. When FALSE, falls back to vanilla rules."))
+                    .setSaveConsumer(newValue -> config.unlockedSword = newValue).build());
             weaponCat.addEntry(entryBuilder.startStrList(Component.literal("Sword Enchantment List"), config.swordEnchantments)
                     .setTooltip(Component.literal("Format: namespace:id (e.g., minecraft:sharpness)"))
                     .setSaveConsumer(newValue -> config.swordEnchantments = newValue).build());
 
             weaponCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Axe"), config.unlockedAxe)
-                    .setDefaultValue(true).setSaveConsumer(newValue -> config.unlockedAxe = newValue).build());
+                    .setDefaultValue(true)
+                    .setTooltip(Component.literal("When TRUE, strictly enforces the whitelist below. When FALSE, falls back to vanilla rules."))
+                    .setSaveConsumer(newValue -> config.unlockedAxe = newValue).build());
             weaponCat.addEntry(entryBuilder.startStrList(Component.literal("Axe Enchantment List"), config.axeEnchantments)
+                    .setTooltip(Component.literal("Format: namespace:id (e.g., minecraft:sharpness)"))
                     .setSaveConsumer(newValue -> config.axeEnchantments = newValue).build());
 
             weaponCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Mace"), config.unlockedMace)
-                    .setDefaultValue(true).setSaveConsumer(newValue -> config.unlockedMace = newValue).build());
+                    .setDefaultValue(true)
+                    .setTooltip(Component.literal("When TRUE, strictly enforces the whitelist below. When FALSE, falls back to vanilla rules."))
+                    .setSaveConsumer(newValue -> config.unlockedMace = newValue).build());
             weaponCat.addEntry(entryBuilder.startStrList(Component.literal("Mace Enchantment List"), config.maceEnchantments)
+                    .setTooltip(Component.literal("Format: namespace:id (e.g., minecraft:sharpness)"))
                     .setSaveConsumer(newValue -> config.maceEnchantments = newValue).build());
 
 
@@ -71,18 +80,27 @@ public class ModMenuIntegration implements ModMenuApi {
             ConfigCategory rangedCat = builder.getOrCreateCategory(Component.literal("Unlocked: Ranged & Trident"));
 
             rangedCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Trident"), config.unlockedTrident)
-                    .setDefaultValue(true).setSaveConsumer(newValue -> config.unlockedTrident = newValue).build());
+                    .setDefaultValue(true)
+                    .setTooltip(Component.literal("When TRUE, strictly enforces the whitelist below. When FALSE, falls back to vanilla rules."))
+                    .setSaveConsumer(newValue -> config.unlockedTrident = newValue).build());
             rangedCat.addEntry(entryBuilder.startStrList(Component.literal("Trident Enchantment List"), config.tridentEnchantments)
+                    .setTooltip(Component.literal("Format: namespace:id (e.g., minecraft:sharpness)"))
                     .setSaveConsumer(newValue -> config.tridentEnchantments = newValue).build());
 
             rangedCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Bow"), config.unlockedBow)
-                    .setDefaultValue(true).setSaveConsumer(newValue -> config.unlockedBow = newValue).build());
+                    .setDefaultValue(true)
+                    .setTooltip(Component.literal("When TRUE, strictly enforces the whitelist below. When FALSE, falls back to vanilla rules."))
+                    .setSaveConsumer(newValue -> config.unlockedBow = newValue).build());
             rangedCat.addEntry(entryBuilder.startStrList(Component.literal("Bow Enchantment List"), config.bowEnchantments)
+                    .setTooltip(Component.literal("Format: namespace:id (e.g., minecraft:sharpness)"))
                     .setSaveConsumer(newValue -> config.bowEnchantments = newValue).build());
 
             rangedCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Crossbow"), config.unlockedCrossbow)
-                    .setDefaultValue(true).setSaveConsumer(newValue -> config.unlockedCrossbow = newValue).build());
+                    .setDefaultValue(true)
+                    .setTooltip(Component.literal("When TRUE, strictly enforces the whitelist below. When FALSE, falls back to vanilla rules."))
+                    .setSaveConsumer(newValue -> config.unlockedCrossbow = newValue).build());
             rangedCat.addEntry(entryBuilder.startStrList(Component.literal("Crossbow Enchantment List"), config.crossbowEnchantments)
+                    .setTooltip(Component.literal("Format: namespace:id (e.g., minecraft:sharpness)"))
                     .setSaveConsumer(newValue -> config.crossbowEnchantments = newValue).build());
 
 
@@ -90,13 +108,35 @@ public class ModMenuIntegration implements ModMenuApi {
             ConfigCategory toolCat = builder.getOrCreateCategory(Component.literal("Unlocked: Armor & Tools"));
 
             toolCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Armor"), config.unlockedArmor)
-                    .setDefaultValue(true).setSaveConsumer(newValue -> config.unlockedArmor = newValue).build());
+                    .setDefaultValue(true)
+                    .setTooltip(Component.literal("When TRUE, strictly enforces the whitelist below. When FALSE, falls back to vanilla rules."))
+                    .setSaveConsumer(newValue -> config.unlockedArmor = newValue).build());
             toolCat.addEntry(entryBuilder.startStrList(Component.literal("Armor Enchantment List"), config.armorEnchantments)
+                    .setTooltip(Component.literal("Format: namespace:id (e.g., minecraft:sharpness)"))
                     .setSaveConsumer(newValue -> config.armorEnchantments = newValue).build());
 
+            toolCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Pickaxe"), config.unlockedPickaxe)
+                    .setDefaultValue(false)
+                    .setTooltip(Component.literal("When TRUE, strictly enforces the whitelist below. When FALSE, falls back to vanilla rules."))
+                    .setSaveConsumer(newValue -> config.unlockedPickaxe = newValue).build());
+            toolCat.addEntry(entryBuilder.startStrList(Component.literal("Pickaxe Enchantment List"), config.pickaxeEnchantments)
+                    .setTooltip(Component.literal("Format: namespace:id (e.g., minecraft:efficiency)"))
+                    .setSaveConsumer(newValue -> config.pickaxeEnchantments = newValue).build());
+
+            toolCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Shovel"), config.unlockedShovel)
+                    .setDefaultValue(false)
+                    .setTooltip(Component.literal("When TRUE, strictly enforces the whitelist. Allows Shovels to inherit Sword enchants (Sharpness, Smite, Fire Aspect, etc.)."))
+                    .setSaveConsumer(newValue -> config.unlockedShovel = newValue).build());
+            toolCat.addEntry(entryBuilder.startStrList(Component.literal("Shovel Enchantment List"), config.shovelEnchantments)
+                    .setTooltip(Component.literal("Format: namespace:id (e.g., minecraft:efficiency)"))
+                    .setSaveConsumer(newValue -> config.shovelEnchantments = newValue).build());
+
             toolCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Hoe"), config.unlockedHoe)
-                    .setDefaultValue(true).setSaveConsumer(newValue -> config.unlockedHoe = newValue).build());
+                    .setDefaultValue(true)
+                    .setTooltip(Component.literal("When TRUE, strictly enforces the whitelist below. When FALSE, falls back to vanilla rules."))
+                    .setSaveConsumer(newValue -> config.unlockedHoe = newValue).build());
             toolCat.addEntry(entryBuilder.startStrList(Component.literal("Hoe Enchantment List"), config.hoeEnchantments)
+                    .setTooltip(Component.literal("Format: namespace:id (e.g., minecraft:sharpness)"))
                     .setSaveConsumer(newValue -> config.hoeEnchantments = newValue).build());
 
             toolCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Allow The Un-Enchantable"), config.allowTheUnEnchantable)
