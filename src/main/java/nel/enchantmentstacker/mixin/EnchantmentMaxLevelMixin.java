@@ -15,15 +15,29 @@ public abstract class EnchantmentMaxLevelMixin {
 
     @Shadow public abstract Component description();
 
-    @Inject(method = "getMaxLevel", at = @At("HEAD"), cancellable = true)
-    private void applyCustomMaxLevel(CallbackInfoReturnable<Integer> cir) {
+    // Translates the key so it perfectly matches the new config format
+    private String getFormattedKey() {
         if (this.description().getContents() instanceof TranslatableContents translatable) {
             String key = translatable.getKey();
-            int customMax = ModConfig.get().getCustomMaxLevel(key);
-
-            if (customMax > 0) {
-                cir.setReturnValue(customMax);
+            if (key.startsWith("enchantment.")) {
+                String trimmed = key.substring(12);
+                int dotIndex = trimmed.indexOf('.');
+                if (dotIndex != -1) {
+                    return trimmed.substring(0, dotIndex) + ":" + trimmed.substring(dotIndex + 1);
+                }
             }
+            return key;
+        }
+        return "";
+    }
+
+    @Inject(method = "getMaxLevel", at = @At("HEAD"), cancellable = true)
+    private void applyCustomMaxLevel(CallbackInfoReturnable<Integer> cir) {
+        String key = getFormattedKey();
+        int customMax = ModConfig.get().getCustomMaxLevel(key);
+
+        if (customMax > 0) {
+            cir.setReturnValue(customMax);
         }
     }
 }

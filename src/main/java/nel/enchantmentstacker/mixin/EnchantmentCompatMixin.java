@@ -16,14 +16,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Enchantment.class)
 public class EnchantmentCompatMixin {
 
+    // Converts "enchantment.minecraft.smite" into "minecraft:smite" to match the config lists!
     private static String getEnchKey(Enchantment enchantment) {
         if (enchantment.description().getContents() instanceof TranslatableContents translatable) {
-            return translatable.getKey();
+            String key = translatable.getKey();
+            if (key.startsWith("enchantment.")) {
+                String trimmed = key.substring(12);
+                int dotIndex = trimmed.indexOf('.');
+                if (dotIndex != -1) {
+                    return trimmed.substring(0, dotIndex) + ":" + trimmed.substring(dotIndex + 1);
+                }
+            }
+            return key;
         }
         return "";
     }
 
-    // CAPTURE THE ITEM PRECISELY WHEN THE GAME EVALUATES IT
     @Inject(method = "isSupportedItem", at = @At("HEAD"))
     private void captureContextFromSupported(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
         EnchantmentStacker.CURRENT_ITEM.set(stack);
@@ -41,64 +49,31 @@ public class EnchantmentCompatMixin {
         String keyB = getEnchKey(b.value());
 
         // Preserve Silk Touch and Fortune incompatibility permanently
-        boolean isSilkAndFortune = (keyA.equals("enchantment.minecraft.silk_touch") && keyB.equals("enchantment.minecraft.fortune")) ||
-                (keyA.equals("enchantment.minecraft.fortune") && keyB.equals("enchantment.minecraft.silk_touch"));
-        if (isSilkAndFortune) return;
+        if ((keyA.equals("minecraft:silk_touch") && keyB.equals("minecraft:fortune")) ||
+                (keyA.equals("minecraft:fortune") && keyB.equals("minecraft:silk_touch"))) return;
 
-        // GRAB THE ITEM FROM MEMORY
         ItemStack current = EnchantmentStacker.CURRENT_ITEM.get();
+        if (current == null || current.isEmpty()) return;
 
-        boolean isSword = current != null && current.is(ItemTags.SWORDS);
-        boolean isAxe = current != null && current.is(ItemTags.AXES);
-        boolean isHoe = current != null && current.is(ItemTags.HOES);
-        boolean isMace = current != null && current.is(Items.MACE);
-        boolean isArmor = current != null && current.is(ItemTags.TRIMMABLE_ARMOR);
-        boolean isBow = current != null && current.is(Items.BOW);
-        boolean isCrossbow = current != null && current.is(Items.CROSSBOW);
-        boolean isBook = current != null && (current.is(Items.BOOK) || current.is(Items.ENCHANTED_BOOK));
+        boolean isSword = current.is(ItemTags.SWORDS);
+        boolean isAxe = current.is(ItemTags.AXES);
+        boolean isHoe = current.is(ItemTags.HOES);
+        boolean isMace = current.is(Items.MACE);
+        boolean isTrident = current.is(Items.TRIDENT);
+        boolean isArmor = current.is(ItemTags.TRIMMABLE_ARMOR);
+        boolean isBow = current.is(Items.BOW);
+        boolean isCrossbow = current.is(Items.CROSSBOW);
+        boolean isBook = current.is(Items.BOOK) || current.is(Items.ENCHANTED_BOOK);
 
-        // Damage Enchants
-        boolean isDamageA = keyA.equals("enchantment.minecraft.sharpness") || keyA.equals("enchantment.minecraft.smite") || keyA.equals("enchantment.minecraft.bane_of_arthropods");
-        boolean isDamageB = keyB.equals("enchantment.minecraft.sharpness") || keyB.equals("enchantment.minecraft.smite") || keyB.equals("enchantment.minecraft.bane_of_arthropods");
-        if (isDamageA && isDamageB) {
-            if (isSword && config.allowSwordStacker) cir.setReturnValue(true);
-            else if (isAxe && config.allowAxeStacker) cir.setReturnValue(true);
-            else if (isMace && config.allowMaceStacker) cir.setReturnValue(true);
-            else if (isBook && (config.allowSwordStacker || config.allowAxeStacker || config.allowMaceStacker)) cir.setReturnValue(true);
-            return;
-        }
-
-        // Protection Enchants
-        boolean isProtectionA = keyA.contains("protection");
-        boolean isProtectionB = keyB.contains("protection");
-        if (isProtectionA && isProtectionB) {
-            if ((isArmor || isBook) && config.allowArmorStacker) cir.setReturnValue(true);
-            return;
-        }
-
-        // Bow Enchants
-        boolean isBowEnchA = keyA.equals("enchantment.minecraft.infinity") || keyA.equals("enchantment.minecraft.mending");
-        boolean isBowEnchB = keyB.equals("enchantment.minecraft.infinity") || keyB.equals("enchantment.minecraft.mending");
-        if (isBowEnchA && isBowEnchB) {
-            if ((isBow || isBook) && config.allowBowStacker) cir.setReturnValue(true);
-            return;
-        }
-
-        // Crossbow Enchants
-        boolean isCrossbowA = keyA.equals("enchantment.minecraft.multishot") || keyA.equals("enchantment.minecraft.piercing");
-        boolean isCrossbowB = keyB.equals("enchantment.minecraft.multishot") || keyB.equals("enchantment.minecraft.piercing");
-        if (isCrossbowA && isCrossbowB) {
-            if ((isCrossbow || isBook) && config.allowCrossbowStacker) cir.setReturnValue(true);
-            return;
-        }
-
-        // Mace Specific Enchants
-        boolean isMaceA = keyA.equals("enchantment.minecraft.breach") || keyA.equals("enchantment.minecraft.density");
-        boolean isMaceB = keyB.equals("enchantment.minecraft.breach") || keyB.equals("enchantment.minecraft.density");
-        if (isMaceA && isMaceB) {
-            if ((isMace || isBook) && config.allowMaceStacker) cir.setReturnValue(true);
-            return;
-        }
+        // Check if the current tool is unlocked AND if BOTH enchantments are in its custom list
+        if ((isSword || isBook) && config.unlockedSword && config.swordEnchantments.contains(keyA) && config.swordEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+        if ((isAxe || isBook) && config.unlockedAxe && config.axeEnchantments.contains(keyA) && config.axeEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+        if ((isMace || isBook) && config.unlockedMace && config.maceEnchantments.contains(keyA) && config.maceEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+        if ((isTrident || isBook) && config.unlockedTrident && config.tridentEnchantments.contains(keyA) && config.tridentEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+        if ((isBow || isBook) && config.unlockedBow && config.bowEnchantments.contains(keyA) && config.bowEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+        if ((isCrossbow || isBook) && config.unlockedCrossbow && config.crossbowEnchantments.contains(keyA) && config.crossbowEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+        if ((isArmor || isBook) && config.unlockedArmor && config.armorEnchantments.contains(keyA) && config.armorEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
+        if ((isHoe || isBook) && config.unlockedHoe && config.hoeEnchantments.contains(keyA) && config.hoeEnchantments.contains(keyB)) { cir.setReturnValue(true); return; }
     }
 
     @Inject(method = "isSupportedItem", at = @At("HEAD"), cancellable = true)
@@ -107,31 +82,19 @@ public class EnchantmentCompatMixin {
         Enchantment enchantment = (Enchantment) (Object) this;
         String key = getEnchKey(enchantment);
 
-        // Axe, Hoe, & Mace borrow Sword enchants
-        if ((config.allowAxeStacker && stack.is(ItemTags.AXES)) ||
-                (config.allowHoeExpanded && stack.is(ItemTags.HOES)) ||
-                (config.allowMaceStacker && stack.is(Items.MACE))) {
+        if (config.unlockedSword && stack.is(ItemTags.SWORDS) && config.swordEnchantments.contains(key)) cir.setReturnValue(true);
+        if (config.unlockedAxe && stack.is(ItemTags.AXES) && config.axeEnchantments.contains(key)) cir.setReturnValue(true);
+        if (config.unlockedMace && stack.is(Items.MACE) && config.maceEnchantments.contains(key)) cir.setReturnValue(true);
+        if (config.unlockedTrident && stack.is(Items.TRIDENT) && config.tridentEnchantments.contains(key)) cir.setReturnValue(true);
+        if (config.unlockedBow && stack.is(Items.BOW) && config.bowEnchantments.contains(key)) cir.setReturnValue(true);
+        if (config.unlockedCrossbow && stack.is(Items.CROSSBOW) && config.crossbowEnchantments.contains(key)) cir.setReturnValue(true);
+        if (config.unlockedArmor && stack.is(ItemTags.TRIMMABLE_ARMOR) && config.armorEnchantments.contains(key)) cir.setReturnValue(true);
+        if (config.unlockedHoe && stack.is(ItemTags.HOES) && config.hoeEnchantments.contains(key)) cir.setReturnValue(true);
 
-            if (enchantment.isSupportedItem(new ItemStack(Items.DIAMOND_SWORD))) {
-                // BLACKLIST SWEEPING EDGE FOR AXES
-                if (stack.is(ItemTags.AXES) && key.equals("enchantment.minecraft.sweeping_edge")) {
-                    // Let it fall through to vanilla logic (which naturally rejects it)
-                } else {
-                    cir.setReturnValue(true);
-                }
-            }
-        }
-
-        // Crossbow borrows Bow enchants
-        if (config.allowCrossbowStacker && stack.is(Items.CROSSBOW)) {
-            if (enchantment.isSupportedItem(new ItemStack(Items.BOW))) cir.setReturnValue(true);
-        }
-
-        // Handle Un-Enchantable Items
         if (config.allowTheUnEnchantable) {
             if (stack.is(Items.SHIELD) || stack.is(Items.ELYTRA) || stack.is(Items.SHEARS) || stack.is(Items.FLINT_AND_STEEL) || stack.is(Items.BRUSH)) {
-                if (key.equals("enchantment.minecraft.unbreaking") || key.equals("enchantment.minecraft.mending")) cir.setReturnValue(true);
-                if (stack.is(Items.SHEARS) && key.equals("enchantment.minecraft.efficiency")) cir.setReturnValue(true);
+                if (key.equals("minecraft:unbreaking") || key.equals("minecraft:mending")) cir.setReturnValue(true);
+                if (stack.is(Items.SHEARS) && key.equals("minecraft:efficiency")) cir.setReturnValue(true);
             }
         }
     }
@@ -142,28 +105,19 @@ public class EnchantmentCompatMixin {
         Enchantment enchantment = (Enchantment) (Object) this;
         String key = getEnchKey(enchantment);
 
-        if ((config.allowAxeStacker && stack.is(ItemTags.AXES)) ||
-                (config.allowHoeExpanded && stack.is(ItemTags.HOES)) ||
-                (config.allowMaceStacker && stack.is(Items.MACE))) {
-
-            if (enchantment.isPrimaryItem(new ItemStack(Items.DIAMOND_SWORD))) {
-                // BLACKLIST SWEEPING EDGE FOR AXES
-                if (stack.is(ItemTags.AXES) && key.equals("enchantment.minecraft.sweeping_edge")) {
-                    // Let it fall through to vanilla logic
-                } else {
-                    cir.setReturnValue(true);
-                }
-            }
-        }
-
-        if (config.allowCrossbowStacker && stack.is(Items.CROSSBOW)) {
-            if (enchantment.isPrimaryItem(new ItemStack(Items.BOW))) cir.setReturnValue(true);
-        }
+        if (config.unlockedSword && stack.is(ItemTags.SWORDS) && config.swordEnchantments.contains(key)) cir.setReturnValue(true);
+        if (config.unlockedAxe && stack.is(ItemTags.AXES) && config.axeEnchantments.contains(key)) cir.setReturnValue(true);
+        if (config.unlockedMace && stack.is(Items.MACE) && config.maceEnchantments.contains(key)) cir.setReturnValue(true);
+        if (config.unlockedTrident && stack.is(Items.TRIDENT) && config.tridentEnchantments.contains(key)) cir.setReturnValue(true);
+        if (config.unlockedBow && stack.is(Items.BOW) && config.bowEnchantments.contains(key)) cir.setReturnValue(true);
+        if (config.unlockedCrossbow && stack.is(Items.CROSSBOW) && config.crossbowEnchantments.contains(key)) cir.setReturnValue(true);
+        if (config.unlockedArmor && stack.is(ItemTags.TRIMMABLE_ARMOR) && config.armorEnchantments.contains(key)) cir.setReturnValue(true);
+        if (config.unlockedHoe && stack.is(ItemTags.HOES) && config.hoeEnchantments.contains(key)) cir.setReturnValue(true);
 
         if (config.allowTheUnEnchantable) {
             if (stack.is(Items.SHIELD) || stack.is(Items.ELYTRA) || stack.is(Items.SHEARS) || stack.is(Items.FLINT_AND_STEEL) || stack.is(Items.BRUSH)) {
-                if (key.equals("enchantment.minecraft.unbreaking") || key.equals("enchantment.minecraft.mending")) cir.setReturnValue(true);
-                if (stack.is(Items.SHEARS) && key.equals("enchantment.minecraft.efficiency")) cir.setReturnValue(true);
+                if (key.equals("minecraft:unbreaking") || key.equals("minecraft:mending")) cir.setReturnValue(true);
+                if (stack.is(Items.SHEARS) && key.equals("minecraft:efficiency")) cir.setReturnValue(true);
             }
         }
     }

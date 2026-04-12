@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "enchantmentstacker",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"name": "Enchantment Stacker",
 	"description": "Allows tweaking enchantments and fixes anvil repair costs & Grindstone enchantment transfer.",
 	"authors": [

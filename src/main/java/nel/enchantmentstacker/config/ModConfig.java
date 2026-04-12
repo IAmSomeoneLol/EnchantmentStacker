@@ -6,7 +6,10 @@ import com.google.gson.GsonBuilder;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ModConfig {
@@ -20,27 +23,66 @@ public class ModConfig {
     public double percentRepairedPerAction = 0.3333;
     public boolean enableGrindstoneExtraction = true;
 
-    // Stacker Settings
-    public boolean allowSwordStacker = true;
-    public boolean allowAxeStacker = true;
-    public boolean allowMaceStacker = true;
-    public boolean allowBowStacker = true;
-    public boolean allowCrossbowStacker = true;
+    // Unlocked - Weapons
+    public boolean unlockedSword = true;
+    public List<String> swordEnchantments = new ArrayList<>(Arrays.asList(
+            "minecraft:sharpness", "minecraft:smite", "minecraft:bane_of_arthropods"
+    ));
 
-    // Armor & Tool Tweaks
-    public boolean allowArmorStacker = true;
-    public boolean allowHoeExpanded = true;
+    public boolean unlockedAxe = true;
+    public List<String> axeEnchantments = new ArrayList<>(Arrays.asList(
+            "minecraft:sharpness", "minecraft:smite", "minecraft:bane_of_arthropods",
+            "minecraft:fire_aspect", "minecraft:looting", "minecraft:knockback"
+    ));
+
+    public boolean unlockedMace = true;
+    public List<String> maceEnchantments = new ArrayList<>(Arrays.asList(
+            "minecraft:breach", "minecraft:density", "minecraft:sharpness",
+            "minecraft:smite", "minecraft:bane_of_arthropods", "minecraft:fire_aspect", "minecraft:looting"
+    ));
+
+    // Unlocked - Ranged & Trident
+    public boolean unlockedTrident = true;
+    public List<String> tridentEnchantments = new ArrayList<>(Arrays.asList(
+            "minecraft:riptide", "minecraft:loyalty", "minecraft:channeling",
+            "minecraft:sharpness", "minecraft:smite", "minecraft:bane_of_arthropods",
+            "minecraft:looting", "minecraft:fire_aspect"
+    ));
+
+    public boolean unlockedBow = true;
+    public List<String> bowEnchantments = new ArrayList<>(Arrays.asList(
+            "minecraft:infinity", "minecraft:mending"
+    ));
+
+    public boolean unlockedCrossbow = true;
+    public List<String> crossbowEnchantments = new ArrayList<>(Arrays.asList(
+            "minecraft:multishot", "minecraft:piercing", "minecraft:power",
+            "minecraft:punch", "minecraft:flame", "minecraft:infinity", "minecraft:mending"
+    ));
+
+    // Unlocked - Armor & Tools
+    public boolean unlockedArmor = true;
+    public List<String> armorEnchantments = new ArrayList<>(Arrays.asList(
+            "minecraft:protection", "minecraft:fire_protection",
+            "minecraft:blast_protection", "minecraft:projectile_protection"
+    ));
+
+    public boolean unlockedHoe = true;
+    public List<String> hoeEnchantments = new ArrayList<>(Arrays.asList(
+            "minecraft:sharpness", "minecraft:smite", "minecraft:bane_of_arthropods",
+            "minecraft:fire_aspect", "minecraft:looting"
+    ));
+
+    // Un-Enchantables
     public boolean allowTheUnEnchantable = true;
 
-    // Map to hold all Vanilla Enchantment Max Levels
+    // Vanilla Max Levels
     public Map<String, Integer> vanillaEnchantmentMaxLevels = new HashMap<>();
 
     private static ModConfig instance;
 
     public static ModConfig get() {
-        if (instance == null) {
-            load();
-        }
+        if (instance == null) load();
         return instance;
     }
 
@@ -48,24 +90,17 @@ public class ModConfig {
         if (CONFIG_FILE.exists()) {
             try (FileReader reader = new FileReader(CONFIG_FILE)) {
                 instance = GSON.fromJson(reader, ModConfig.class);
-
-                // If the file was completely empty, GSON returns null.
-                if (instance == null) {
-                    instance = new ModConfig();
-                }
+                if (instance == null) instance = new ModConfig();
             } catch (Exception e) {
-                // Catch exceptions (corrupted JSON formatting)
                 instance = new ModConfig();
             }
         } else {
             instance = new ModConfig();
         }
 
-        // check in case GSON missed the map during an update
         if (instance.vanillaEnchantmentMaxLevels == null) {
             instance.vanillaEnchantmentMaxLevels = new HashMap<>();
         }
-
         if (instance.vanillaEnchantmentMaxLevels.isEmpty()) {
             instance.populateDefaultLevels();
         }
@@ -84,47 +119,47 @@ public class ModConfig {
     }
 
     private void populateDefaultLevels() {
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.protection", 4);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.fire_protection", 4);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.feather_falling", 4);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.blast_protection", 4);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.projectile_protection", 4);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.respiration", 3);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.aqua_affinity", 1);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.thorns", 3);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.depth_strider", 3);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.frost_walker", 2);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.binding_curse", 1);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.sharpness", 5);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.smite", 5);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.bane_of_arthropods", 5);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.knockback", 2);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.fire_aspect", 2);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.looting", 3);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.sweeping_edge", 3);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.efficiency", 5);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.silk_touch", 1);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.unbreaking", 3);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.fortune", 3);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.power", 5);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.punch", 2);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.flame", 1);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.infinity", 1);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.luck_of_the_sea", 3);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.lure", 3);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.loyalty", 3);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.impaling", 5);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.riptide", 3);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.channeling", 1);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.multishot", 1);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.quick_charge", 3);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.piercing", 4);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.mending", 1);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.vanishing_curse", 1);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.soul_speed", 3);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.swift_sneak", 3);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.density", 5);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.breach", 4);
-        vanillaEnchantmentMaxLevels.put("enchantment.minecraft.wind_burst", 3);
+        vanillaEnchantmentMaxLevels.put("minecraft:protection", 4);
+        vanillaEnchantmentMaxLevels.put("minecraft:fire_protection", 4);
+        vanillaEnchantmentMaxLevels.put("minecraft:feather_falling", 4);
+        vanillaEnchantmentMaxLevels.put("minecraft:blast_protection", 4);
+        vanillaEnchantmentMaxLevels.put("minecraft:projectile_protection", 4);
+        vanillaEnchantmentMaxLevels.put("minecraft:respiration", 3);
+        vanillaEnchantmentMaxLevels.put("minecraft:aqua_affinity", 1);
+        vanillaEnchantmentMaxLevels.put("minecraft:thorns", 3);
+        vanillaEnchantmentMaxLevels.put("minecraft:depth_strider", 3);
+        vanillaEnchantmentMaxLevels.put("minecraft:frost_walker", 2);
+        vanillaEnchantmentMaxLevels.put("minecraft:binding_curse", 1);
+        vanillaEnchantmentMaxLevels.put("minecraft:sharpness", 5);
+        vanillaEnchantmentMaxLevels.put("minecraft:smite", 5);
+        vanillaEnchantmentMaxLevels.put("minecraft:bane_of_arthropods", 5);
+        vanillaEnchantmentMaxLevels.put("minecraft:knockback", 2);
+        vanillaEnchantmentMaxLevels.put("minecraft:fire_aspect", 2);
+        vanillaEnchantmentMaxLevels.put("minecraft:looting", 3);
+        vanillaEnchantmentMaxLevels.put("minecraft:sweeping_edge", 3);
+        vanillaEnchantmentMaxLevels.put("minecraft:efficiency", 5);
+        vanillaEnchantmentMaxLevels.put("minecraft:silk_touch", 1);
+        vanillaEnchantmentMaxLevels.put("minecraft:unbreaking", 3);
+        vanillaEnchantmentMaxLevels.put("minecraft:fortune", 3);
+        vanillaEnchantmentMaxLevels.put("minecraft:power", 5);
+        vanillaEnchantmentMaxLevels.put("minecraft:punch", 2);
+        vanillaEnchantmentMaxLevels.put("minecraft:flame", 1);
+        vanillaEnchantmentMaxLevels.put("minecraft:infinity", 1);
+        vanillaEnchantmentMaxLevels.put("minecraft:luck_of_the_sea", 3);
+        vanillaEnchantmentMaxLevels.put("minecraft:lure", 3);
+        vanillaEnchantmentMaxLevels.put("minecraft:loyalty", 3);
+        vanillaEnchantmentMaxLevels.put("minecraft:impaling", 5);
+        vanillaEnchantmentMaxLevels.put("minecraft:riptide", 3);
+        vanillaEnchantmentMaxLevels.put("minecraft:channeling", 1);
+        vanillaEnchantmentMaxLevels.put("minecraft:multishot", 1);
+        vanillaEnchantmentMaxLevels.put("minecraft:quick_charge", 3);
+        vanillaEnchantmentMaxLevels.put("minecraft:piercing", 4);
+        vanillaEnchantmentMaxLevels.put("minecraft:mending", 1);
+        vanillaEnchantmentMaxLevels.put("minecraft:vanishing_curse", 1);
+        vanillaEnchantmentMaxLevels.put("minecraft:soul_speed", 3);
+        vanillaEnchantmentMaxLevels.put("minecraft:swift_sneak", 3);
+        vanillaEnchantmentMaxLevels.put("minecraft:density", 5);
+        vanillaEnchantmentMaxLevels.put("minecraft:breach", 4);
+        vanillaEnchantmentMaxLevels.put("minecraft:wind_burst", 3);
     }
 }

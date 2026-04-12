@@ -21,106 +21,97 @@ public class ModMenuIntegration implements ModMenuApi {
 
             ConfigEntryBuilder entryBuilder = builder.entryBuilder();
 
-            // ----------------- ANVIL & GRINDSTONE SETTINGS ------------------
-            ConfigCategory anvilCat = builder.getOrCreateCategory(Component.literal("Anvil & Grindstone Settings"));
+            // ------------------ ANVIL & GRINDSTONE ------------------
+            ConfigCategory anvilCat = builder.getOrCreateCategory(Component.literal("Anvil & Grindstone"));
 
             anvilCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Enable Fixed Anvil Cost"), config.enableFixedAnvilCost)
                     .setDefaultValue(true)
-                    .setTooltip(Component.literal("Locks the anvil repair costs to a static amount and prevents the 'Too Expensive!' mechanic."))
-                    .setSaveConsumer(newValue -> config.enableFixedAnvilCost = newValue)
-                    .build());
+                    .setTooltip(Component.literal("Locks the anvil repair costs to a static amount and prevents 'Too Expensive!'"))
+                    .setSaveConsumer(newValue -> config.enableFixedAnvilCost = newValue).build());
 
             anvilCat.addEntry(entryBuilder.startIntField(Component.literal("Repair Level Cost"), config.repairCostLevelAmount)
                     .setDefaultValue(3)
-                    .setTooltip(Component.literal("The flat XP level cost for anvil repairs."))
-                    .setSaveConsumer(newValue -> config.repairCostLevelAmount = newValue)
-                    .build());
+                    .setSaveConsumer(newValue -> config.repairCostLevelAmount = newValue).build());
 
             anvilCat.addEntry(entryBuilder.startIntField(Component.literal("Repair Material Cost"), config.repairCostMaterialAmount)
                     .setDefaultValue(1)
-                    .setTooltip(Component.literal("The flat material cost (e.g., 1 Iron Ingot) for anvil repairs."))
-                    .setSaveConsumer(newValue -> config.repairCostMaterialAmount = newValue)
-                    .build());
+                    .setSaveConsumer(newValue -> config.repairCostMaterialAmount = newValue).build());
 
             anvilCat.addEntry(entryBuilder.startDoubleField(Component.literal("Percent Repaired Per Action"), config.percentRepairedPerAction)
                     .setDefaultValue(0.3333)
-                    .setTooltip(Component.literal("How much durability is restored per material. 0.3333 means 3 materials fully repairs the item."))
-                    .setSaveConsumer(newValue -> config.percentRepairedPerAction = newValue)
-                    .build());
+                    .setSaveConsumer(newValue -> config.percentRepairedPerAction = newValue).build());
 
             anvilCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Enable Grindstone Extraction"), config.enableGrindstoneExtraction)
                     .setDefaultValue(true)
-                    .setTooltip(Component.literal("Place an Enchanted Item and a Book in the Grindstone to strip the enchants onto an Enchanted Book."))
-                    .setSaveConsumer(newValue -> config.enableGrindstoneExtraction = newValue)
-                    .build());
+                    .setTooltip(Component.literal("Place an Enchanted Item and a Book in the Grindstone to extract enchants."))
+                    .setSaveConsumer(newValue -> config.enableGrindstoneExtraction = newValue).build());
 
 
-            // -----------------WEAPON STACKERS ---------------
-            ConfigCategory weaponCat = builder.getOrCreateCategory(Component.literal("Weapon Stackers"));
+            // ------------------ UNLOCKED: WEAPONS ------------------
+            ConfigCategory weaponCat = builder.getOrCreateCategory(Component.literal("Unlocked: Weapons"));
 
-            weaponCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Allow Sword Stacker"), config.allowSwordStacker)
-                    .setDefaultValue(true)
-                    .setTooltip(Component.literal("Allows combining Sharpness, Smite, and Bane of Arthropods on a single Sword."))
-                    .setSaveConsumer(newValue -> config.allowSwordStacker = newValue)
-                    .build());
+            weaponCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Sword"), config.unlockedSword)
+                    .setDefaultValue(true).setSaveConsumer(newValue -> config.unlockedSword = newValue).build());
+            weaponCat.addEntry(entryBuilder.startStrList(Component.literal("Sword Enchantment List"), config.swordEnchantments)
+                    .setTooltip(Component.literal("Format: namespace:id (e.g., minecraft:sharpness)"))
+                    .setSaveConsumer(newValue -> config.swordEnchantments = newValue).build());
 
-            weaponCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Allow Axe Stacker"), config.allowAxeStacker)
-                    .setDefaultValue(true)
-                    .setTooltip(Component.literal("Combines Sharpness, Smite, and Bane of Arthropods. Allows Axes to inherit Sword enchants (Fire Aspect, Looting, Knockback). Blacklists Sweeping Edge."))
-                    .setSaveConsumer(newValue -> config.allowAxeStacker = newValue)
-                    .build());
+            weaponCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Axe"), config.unlockedAxe)
+                    .setDefaultValue(true).setSaveConsumer(newValue -> config.unlockedAxe = newValue).build());
+            weaponCat.addEntry(entryBuilder.startStrList(Component.literal("Axe Enchantment List"), config.axeEnchantments)
+                    .setSaveConsumer(newValue -> config.axeEnchantments = newValue).build());
 
-            weaponCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Allow Mace Stacker"), config.allowMaceStacker)
-                    .setDefaultValue(true)
-                    .setTooltip(Component.literal("Combines Breach and Density. Allows Maces to inherit Sword enchants (Sharpness, Smite, Fire Aspect, Looting, etc.)."))
-                    .setSaveConsumer(newValue -> config.allowMaceStacker = newValue)
-                    .build());
-
-            weaponCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Allow Bow Stacker"), config.allowBowStacker)
-                    .setDefaultValue(true)
-                    .setTooltip(Component.literal("Allows combining Infinity and Mending on a single Bow."))
-                    .setSaveConsumer(newValue -> config.allowBowStacker = newValue)
-                    .build());
-
-            weaponCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Allow Crossbow Stacker"), config.allowCrossbowStacker)
-                    .setDefaultValue(true)
-                    .setTooltip(Component.literal("Combines Multishot and Piercing. Allows Crossbows to inherit Bow enchants (Power, Flame, Punch, Infinity, Mending)."))
-                    .setSaveConsumer(newValue -> config.allowCrossbowStacker = newValue)
-                    .build());
+            weaponCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Mace"), config.unlockedMace)
+                    .setDefaultValue(true).setSaveConsumer(newValue -> config.unlockedMace = newValue).build());
+            weaponCat.addEntry(entryBuilder.startStrList(Component.literal("Mace Enchantment List"), config.maceEnchantments)
+                    .setSaveConsumer(newValue -> config.maceEnchantments = newValue).build());
 
 
-            // --------------- ARMOR & TOOL TWEAKS ------------------
-            ConfigCategory toolCat = builder.getOrCreateCategory(Component.literal("Armor & Tool Tweaks"));
+            // ------------------ UNLOCKED: RANGED & TRIDENT ------------------
+            ConfigCategory rangedCat = builder.getOrCreateCategory(Component.literal("Unlocked: Ranged & Trident"));
 
-            toolCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Allow Armor Stacker"), config.allowArmorStacker)
-                    .setDefaultValue(true)
-                    .setTooltip(Component.literal("Allows combining Protection, Fire Protection, Blast Protection, and Projectile Protection on Armor pieces."))
-                    .setSaveConsumer(newValue -> config.allowArmorStacker = newValue)
-                    .build());
+            rangedCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Trident"), config.unlockedTrident)
+                    .setDefaultValue(true).setSaveConsumer(newValue -> config.unlockedTrident = newValue).build());
+            rangedCat.addEntry(entryBuilder.startStrList(Component.literal("Trident Enchantment List"), config.tridentEnchantments)
+                    .setSaveConsumer(newValue -> config.tridentEnchantments = newValue).build());
 
-            toolCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Allow Hoe Expanded"), config.allowHoeExpanded)
-                    .setDefaultValue(true)
-                    .setTooltip(Component.literal("Allows Hoes to inherit Sword enchants (Sharpness, Smite, Bane of Arthropods, Fire Aspect, Looting, etc.)."))
-                    .setSaveConsumer(newValue -> config.allowHoeExpanded = newValue)
-                    .build());
+            rangedCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Bow"), config.unlockedBow)
+                    .setDefaultValue(true).setSaveConsumer(newValue -> config.unlockedBow = newValue).build());
+            rangedCat.addEntry(entryBuilder.startStrList(Component.literal("Bow Enchantment List"), config.bowEnchantments)
+                    .setSaveConsumer(newValue -> config.bowEnchantments = newValue).build());
+
+            rangedCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Crossbow"), config.unlockedCrossbow)
+                    .setDefaultValue(true).setSaveConsumer(newValue -> config.unlockedCrossbow = newValue).build());
+            rangedCat.addEntry(entryBuilder.startStrList(Component.literal("Crossbow Enchantment List"), config.crossbowEnchantments)
+                    .setSaveConsumer(newValue -> config.crossbowEnchantments = newValue).build());
+
+
+            // ------------------ UNLOCKED: ARMOR & TOOLS ------------------
+            ConfigCategory toolCat = builder.getOrCreateCategory(Component.literal("Unlocked: Armor & Tools"));
+
+            toolCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Armor"), config.unlockedArmor)
+                    .setDefaultValue(true).setSaveConsumer(newValue -> config.unlockedArmor = newValue).build());
+            toolCat.addEntry(entryBuilder.startStrList(Component.literal("Armor Enchantment List"), config.armorEnchantments)
+                    .setSaveConsumer(newValue -> config.armorEnchantments = newValue).build());
+
+            toolCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Unlocked - Hoe"), config.unlockedHoe)
+                    .setDefaultValue(true).setSaveConsumer(newValue -> config.unlockedHoe = newValue).build());
+            toolCat.addEntry(entryBuilder.startStrList(Component.literal("Hoe Enchantment List"), config.hoeEnchantments)
+                    .setSaveConsumer(newValue -> config.hoeEnchantments = newValue).build());
 
             toolCat.addEntry(entryBuilder.startBooleanToggle(Component.literal("Allow The Un-Enchantable"), config.allowTheUnEnchantable)
                     .setDefaultValue(true)
-                    .setTooltip(Component.literal("Allows Shields, Elytra, Shears, Flint & Steel, and Brushes to receive Unbreaking and Mending natively. Shears also receive Efficiency."))
-                    .setSaveConsumer(newValue -> config.allowTheUnEnchantable = newValue)
-                    .build());
+                    .setTooltip(Component.literal("Allows Shields, Elytra, Shears, Flint & Steel, and Brushes to receive Unbreaking and Mending."))
+                    .setSaveConsumer(newValue -> config.allowTheUnEnchantable = newValue).build());
 
 
-            // ------ VANILLA MAX LEVELS -------------
+            // ------------------ VANILLA MAX LEVELS ------------------
             ConfigCategory levelsCat = builder.getOrCreateCategory(Component.literal("Vanilla Max Levels"));
 
             for (Map.Entry<String, Integer> entry : config.vanillaEnchantmentMaxLevels.entrySet()) {
-                String readableName = entry.getKey().replace("enchantment.minecraft.", "").replace("_", " ");
-                readableName = readableName.substring(0, 1).toUpperCase() + readableName.substring(1);
-
-                levelsCat.addEntry(entryBuilder.startIntField(Component.literal(readableName), entry.getValue())
+                levelsCat.addEntry(entryBuilder.startIntField(Component.literal(entry.getKey()), entry.getValue())
                         .setDefaultValue(entry.getValue())
-                        .setTooltip(Component.literal("Overrides the maximum level for " + readableName + ". Set to -1 to use vanilla default."))
+                        .setTooltip(Component.literal("Overrides the maximum level. Set to -1 to use vanilla default."))
                         .setSaveConsumer(newValue -> config.vanillaEnchantmentMaxLevels.put(entry.getKey(), newValue))
                         .build());
             }
